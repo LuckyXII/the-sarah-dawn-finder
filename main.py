@@ -1,3 +1,4 @@
+from ctypes import alignment
 import kivy
 kivy.require('2.0.0') # replace with your current kivy version !
 
@@ -19,13 +20,17 @@ class MyApp(App):
         url = baseUrl + '/artister-och-evenemang/sarah-dawn-finer/'
         root = AnchorLayout(anchor_x='center', anchor_y='center')
 
+        def setting_function(instance, value):
+            instance.text_size = (value, None)
+
         def openWeb(url):
              webbrowser.open(url)
 
         def scrapeSite(req, result):
             tree = html.fromstring(req.result)
-            events = tree.xpath('//div[@class="c-event"]')
-            anchors = tree.xpath('//div[@class="c-event"]//a[contains(@class,"event__col")]')
+            cEventClassExpr = '//div[@class="c-event"]'
+            events = tree.xpath(cEventClassExpr)
+            anchors = tree.xpath(cEventClassExpr + '//a[contains(@class,"event__col")]')
 
             elements = []
             for e,a in zip(events, anchors):
@@ -43,7 +48,7 @@ class MyApp(App):
             
             box = BoxLayout(
                 orientation='vertical',
-                spacing = -2
+                spacing = -2,
             )
             root.add_widget(box)
 
@@ -60,12 +65,15 @@ class MyApp(App):
                     background_color = [0, 0, 0, 0.5],
                     color = [1,1,1,1],
                     font_size = '17sp',
+                    padding = [10,10],
                     bold = True,
+                    halign = 'center',
                     text = item['data-dom-filter-name'] 
                         + ': ' + item['data-dom-filter-city'] 
                         + ' - ' + item['data-dom-filter-date'] 
                 )
                 btn.bind(on_press = lambda x, item=item: openWeb(baseUrl + item['href']))
+                btn.bind(width=setting_function)
                 box.add_widget(btn)
 
         def refreshData(dt):
